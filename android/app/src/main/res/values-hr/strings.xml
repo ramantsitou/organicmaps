@@ -347,6 +347,22 @@
     <string name="bookmarks_backup_title">Sigurnosna kopija zabilješki i puteva</string>
     <!-- Tracks are recorded or imported GPS paths. -->
     <string name="bookmarks_backup_description">Zabilješke i putevi mogu biti uključeni u sigurnosne kopije sustava Android ako je na ovom uređaju uključeno sigurnosno kopiranje i ne prelaze njegovo ograničenje veličine.</string>
+    <string name="bookmarks_sync_title">Sinkronizacija s Google diskom (beta)</string>
+    <string name="bookmarks_sync_enabled">Sinkroniziraj zabilješke i puteve</string>
+    <string name="bookmarks_sync_account">Google račun</string>
+    <string name="bookmarks_sync_manage_storage">Upravljanje Google pohranom</string>
+    <string name="bookmarks_sync_storage_used">Iskorišteno %1$s od %2$s</string>
+    <string name="bookmarks_sync_mobile_data">Sinkroniziraj putem mobilnih podataka</string>
+    <string name="bookmarks_sync_now">Sinkroniziraj sada</string>
+    <string name="bookmarks_sync_status_synced">Posljednja sinkronizacija: %s</string>
+    <string name="bookmarks_sync_status_running">Sinkronizacija…</string>
+    <string name="bookmarks_sync_status_waiting_wifi">Čeka se Wi-Fi</string>
+    <string name="bookmarks_sync_status_sign_in">Potrebna je prijava</string>
+    <string name="bookmarks_sync_status_quota">Google disk je pun</string>
+    <string name="bookmarks_sync_status_error">Sinkronizacija nije uspjela: %s</string>
+    <string name="bookmarks_sync_delete_cloud">Izbriši podatke s Google diska</string>
+    <string name="bookmarks_sync_delete_cloud_confirm">Izbrisati sinkronizirane zabilješke i puteve s Google diska? Zabilješke i putevi na ovom uređaju ostaju.</string>
+    <string name="bookmarks_sync_beta_warning">Sinkronizacija je u beta fazi. Prije uključivanja izvezite sigurnosnu kopiju svih zabilješki i puteva.</string>
     <string name="search_history_text">Pogledaj svoje nedavne pretrage.</string>
     <string name="clear_search">Izbriši povijest pretraživanja</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
@@ -861,6 +877,8 @@
     <string name="move">Pomakni</string>
     <!-- Text for the editing the Track's color button. -->
     <string name="change_color">Promijeni boju</string>
+    <!-- Action button that enables a disabled feature, such as iCloud synchronization or location services. -->
+    <string name="enable">Omogući</string>
 
     <!-- SECTION: Uncategorized -->
     <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->

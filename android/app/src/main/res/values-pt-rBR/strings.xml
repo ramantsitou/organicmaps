@@ -241,6 +241,22 @@
     <string name="bookmarks_backup_title">Backup de favoritos e trilhas</string>
     <!-- Tracks are recorded or imported GPS paths. -->
     <string name="bookmarks_backup_description">Favoritos e trilhas podem ser incluídos nos backups do sistema Android quando o backup estiver ativado neste dispositivo e não excederem o limite de tamanho dele.</string>
+    <string name="bookmarks_sync_title">Sincronização com o Google Drive (beta)</string>
+    <string name="bookmarks_sync_enabled">Sincronizar favoritos e trilhas</string>
+    <string name="bookmarks_sync_account">Conta do Google</string>
+    <string name="bookmarks_sync_manage_storage">Gerenciar o armazenamento do Google</string>
+    <string name="bookmarks_sync_storage_used">%1$s de %2$s usados</string>
+    <string name="bookmarks_sync_mobile_data">Sincronizar usando dados móveis</string>
+    <string name="bookmarks_sync_now">Sincronizar agora</string>
+    <string name="bookmarks_sync_status_synced">Última sincronização: %s</string>
+    <string name="bookmarks_sync_status_running">Sincronizando…</string>
+    <string name="bookmarks_sync_status_waiting_wifi">Aguardando Wi-Fi</string>
+    <string name="bookmarks_sync_status_sign_in">É necessário fazer login</string>
+    <string name="bookmarks_sync_status_quota">O Google Drive está cheio</string>
+    <string name="bookmarks_sync_status_error">Falha na sincronização: %s</string>
+    <string name="bookmarks_sync_delete_cloud">Excluir dados do Google Drive</string>
+    <string name="bookmarks_sync_delete_cloud_confirm">Excluir os favoritos e trilhas sincronizados do Google Drive? Os favoritos e trilhas neste dispositivo serão mantidos.</string>
+    <string name="bookmarks_sync_beta_warning">A sincronização está em beta. Exporte um backup de todos os favoritos e trilhas antes de ativá-la.</string>
     <string name="search_history_text">Visualizar as buscas recentes.</string>
     <string name="clear_search">Limpar histórico de pesquisa</string>
     <string name="p2p_your_location">Sua localização</string>
