@@ -18,8 +18,9 @@ namespace common
 class QtRenderOGLContext : public dp::OGLContext
 {
 public:
-  QtRenderOGLContext(QOpenGLContext * rootContext, QOffscreenSurface * surface);
+  QtRenderOGLContext(QOpenGLContext * rootContext, QOffscreenSurface * surface, QSize const & size);
 
+  bool BeginRendering() override;
   void Present() override;
   void MakeCurrent() override;
   void DoneCurrent() override;
@@ -34,16 +35,19 @@ private:
   QOffscreenSurface * m_surface = nullptr;
   std::unique_ptr<QOpenGLContext> m_ctx;
 
-  std::unique_ptr<QOpenGLFramebufferObject> m_frontFrame;
-  std::unique_ptr<QOpenGLFramebufferObject> m_backFrame;
-  std::unique_ptr<QOpenGLFramebufferObject> m_acquiredFrame;
-  QRectF m_acquiredFrameRect = QRectF(0.0, 0.0, 0.0, 0.0);
-  QRectF m_frameRect = QRectF(0.0, 0.0, 0.0, 0.0);
+  struct Frame
+  {
+    std::unique_ptr<QOpenGLFramebufferObject> m_buffer;
+    QRectF m_texRect;
+  };
+  // The render thread owns back, the GUI thread owns acquired; front is exchanged under the mutex.
+  Frame m_frontFrame;
+  Frame m_backFrame;
+  Frame m_acquiredFrame;
+  QSize m_size;
   bool m_frameUpdated = false;
 
   std::atomic<bool> m_isContextAvailable;
-  int m_width = 0;
-  int m_height = 0;
 
   std::mutex m_frameMutex;
 };

@@ -306,7 +306,7 @@ void Framework::OnViewportChanged(ScreenBase const & screen)
 
   m_currentModelView = screen;
 
-  GetSearchAPI().OnViewportChanged(GetCurrentViewport());
+  GetSearchAPI().OnViewportChanged(GetVisibleViewport());
 
   GetBookmarkManager().UpdateViewport(m_currentModelView);
   m_trafficManager.UpdateViewport(m_currentModelView);
@@ -1179,6 +1179,18 @@ m2::RectD Framework::GetCurrentViewport() const
   return m_currentModelView.ClipRect();
 }
 
+m2::RectD Framework::GetVisibleViewport() const
+{
+  if (!m_visibleViewport.IsValid() || m_visibleViewport.IsRectInside(m_currentModelView.PixelRectIn3d()))
+    return GetCurrentViewport();
+
+  m2::RectD bounds;
+  for (auto const & corner : {m_visibleViewport.LeftTop(), m_visibleViewport.RightTop(), m_visibleViewport.LeftBottom(),
+                              m_visibleViewport.RightBottom()})
+    bounds.Add(m_currentModelView.PtoG(m_currentModelView.P3dtoP(corner)));
+  return bounds;
+}
+
 void Framework::SetVisibleViewport(m2::RectD const & rect)
 {
   if (m_drapeEngine == nullptr)
@@ -1194,6 +1206,11 @@ void Framework::SetVisibleViewport(m2::RectD const & rect)
 
   m_visibleViewport = rect;
   m_drapeEngine->SetVisibleViewport(rect);
+
+  // Dock changes can expose a different map area without changing the camera. Wait for the first
+  // camera update before initializing search, so queued startup queries use the rendered view.
+  if (GetSearchAPI().IsViewportInitialized())
+    GetSearchAPI().OnViewportChanged(GetVisibleViewport());
 }
 
 void Framework::ShowRect(m2::RectD const & rect, bool animation, bool useVisibleViewport)

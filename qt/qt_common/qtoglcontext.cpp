@@ -11,22 +11,40 @@ namespace qt
 {
 namespace common
 {
-QtRenderOGLContext::QtRenderOGLContext(QOpenGLContext * rootContext, QOffscreenSurface * surface)
+QtRenderOGLContext::QtRenderOGLContext(QOpenGLContext * rootContext, QOffscreenSurface * surface, QSize const & size)
   : m_surface(surface)
   , m_ctx(std::make_unique<QOpenGLContext>())
+  , m_size(size)
   , m_isContextAvailable(false)
 {
+  CHECK(!size.isEmpty(), ());
   m_ctx->setFormat(rootContext->format());
   m_ctx->setShareContext(rootContext);
   m_ctx->create();
   CHECK(m_ctx->isValid(), ());
 }
 
+bool QtRenderOGLContext::BeginRendering()
+{
+  ASSERT(!m_size.isEmpty(), ());
+  QSize size(static_cast<int>(std::bit_ceil(static_cast<uint32_t>(m_size.width()))),
+             static_cast<int>(std::bit_ceil(static_cast<uint32_t>(m_size.height()))));
+  if (m_backFrame.m_buffer)
+    size = size.expandedTo(m_backFrame.m_buffer->size());
+  if (!m_backFrame.m_buffer || m_backFrame.m_buffer->size() != size)
+    m_backFrame.m_buffer = std::make_unique<QOpenGLFramebufferObject>(size, QOpenGLFramebufferObject::Depth);
+  return true;
+}
+
 void QtRenderOGLContext::Present()
 {
+  ASSERT(m_backFrame.m_buffer, ());
   GLFunctions::glFinish();
 
-  std::lock_guard<std::mutex> lock(m_frameMutex);
+  auto const size = m_backFrame.m_buffer->size();
+  m_backFrame.m_texRect = {0.0, 0.0, static_cast<double>(m_size.width()) / size.width(),
+                           static_cast<double>(m_size.height()) / size.height()};
+  std::lock_guard lock(m_frameMutex);
   std::swap(m_frontFrame, m_backFrame);
   m_frameUpdated = true;
 }
@@ -47,34 +65,18 @@ void QtRenderOGLContext::SetFramebuffer(ref_ptr<dp::BaseFramebuffer> framebuffer
 {
   if (framebuffer)
     framebuffer->Bind();
-  else if (m_backFrame != nullptr)
-    m_backFrame->bind();
+  else if (m_backFrame.m_buffer)
+    m_backFrame.m_buffer->bind();
 }
 
 void QtRenderOGLContext::Resize(uint32_t w, uint32_t h)
 {
   CHECK(m_isContextAvailable, ());
 
-  // This function can't be called inside BeginRendering - EndRendering.
-  std::lock_guard lock(m_frameMutex);
-
-  auto const nw = static_cast<int>(std::bit_ceil(w));
-  auto const nh = static_cast<int>(std::bit_ceil(h));
-
-  if (nw <= m_width && nh <= m_height && m_backFrame != nullptr)
-  {
-    m_frameRect = QRectF(0.0, 0.0, w / static_cast<float>(m_width), h / static_cast<float>(m_height));
-    return;
-  }
-
-  m_width = nw;
-  m_height = nh;
-  m_frameRect = QRectF(0.0, 0.0, w / static_cast<float>(m_width), h / static_cast<float>(m_height));
-
-  m_backFrame = std::make_unique<QOpenGLFramebufferObject>(QSize(m_width, m_height), QOpenGLFramebufferObject::Depth);
-  m_frontFrame = std::make_unique<QOpenGLFramebufferObject>(QSize(m_width, m_height), QOpenGLFramebufferObject::Depth);
-  m_acquiredFrame =
-      std::make_unique<QOpenGLFramebufferObject>(QSize(m_width, m_height), QOpenGLFramebufferObject::Depth);
+  // Only prepare the next render target; published and acquired images stay valid until replaced.
+  ASSERT_GREATER(w, 0, ());
+  ASSERT_GREATER(h, 0, ());
+  m_size = QSize(w, h);
 }
 
 bool QtRenderOGLContext::AcquireFrame()
@@ -83,30 +85,27 @@ bool QtRenderOGLContext::AcquireFrame()
     return false;
 
   std::lock_guard lock(m_frameMutex);
-  // Render current acquired frame.
-  if (!m_frameUpdated)
-    return true;
-
-  // Update acquired frame.
-  m_acquiredFrameRect = m_frameRect;
-  std::swap(m_acquiredFrame, m_frontFrame);
-  m_frameUpdated = false;
-
-  return true;
+  if (m_frameUpdated)
+  {
+    std::swap(m_acquiredFrame, m_frontFrame);
+    m_frameUpdated = false;
+  }
+  return m_acquiredFrame.m_buffer != nullptr;
 }
 
 QRectF const & QtRenderOGLContext::GetTexRect() const
 {
-  return m_acquiredFrameRect;
+  ASSERT(m_acquiredFrame.m_buffer, ());
+  return m_acquiredFrame.m_texRect;
 }
 
 GLuint QtRenderOGLContext::GetTextureHandle() const
 {
-  if (!m_acquiredFrame)
+  if (!m_acquiredFrame.m_buffer)
     return 0;
 
-  CHECK(!m_acquiredFrame->isBound(), ());
-  return m_acquiredFrame->texture();
+  CHECK(!m_acquiredFrame.m_buffer->isBound(), ());
+  return m_acquiredFrame.m_buffer->texture();
 }
 
 QtUploadOGLContext::QtUploadOGLContext(QOpenGLContext * rootContext, QOffscreenSurface * surface)

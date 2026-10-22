@@ -9,6 +9,8 @@ set(SRC
   helpers.hpp
   map_widget.cpp
   map_widget.hpp
+  map_widget_container.cpp
+  map_widget_container.hpp
   proxy_style.cpp
   proxy_style.hpp
   qtoglcontext.cpp
@@ -37,3 +39,21 @@ target_link_libraries(${PROJECT_NAME}
     Qt6::OpenGL
     Qt6::OpenGLWidgets
 )
+
+if (BUILD_TESTING)
+  omim_add_test(map_widget_container_tests NO_PLATFORM_INIT map_widget_container_tests.cpp)
+  target_link_libraries(map_widget_container_tests PRIVATE qt_common)
+  set_tests_properties(map_widget_container_tests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+  omim_add_test(qt_drape_tests qtoglcontext_tests.cpp map_widget_tests.cpp)
+  target_link_libraries(qt_drape_tests PRIVATE qt_common qt_tstfrm)
+  if (PLATFORM_MAC)
+    # Native Cocoa supports offscreen GL surfaces; the offscreen QPA plugin cannot create a GL context.
+    set_tests_properties(qt_drape_tests PROPERTIES
+      ENVIRONMENT "QT_QPA_PLATFORM=cocoa"
+      FAIL_REGULAR_EXPRESSION "OpenGL context is not available"
+    )
+  else()
+    set_tests_properties(qt_drape_tests PROPERTIES SKIP_REGULAR_EXPRESSION "OpenGL context is not available")
+  endif()
+endif()
