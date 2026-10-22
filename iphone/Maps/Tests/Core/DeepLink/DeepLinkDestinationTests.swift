@@ -69,6 +69,13 @@ final class DeepLinkDestinationTests: XCTestCase {
     XCTAssertEqual(settingsCount, 1)
   }
 
+  func testSettingsLinkScrollsToOffscreenSetting() throws {
+    try openLink("om://settings?highlight=icloud")
+    let settings = try waitForSettingsOnTop()
+
+    waitUntil { settings.tableView.visibleCells.contains { $0.textLabel?.text == RootSettings.iCloud.title } }
+  }
+
   private var settingsCount: Int {
     navigationController.viewControllers.filter { $0 is RootSettingsViewController }.count
   }
